@@ -57,12 +57,12 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
     editorContainer,
     setEditorContainer,
   } = props;
-  const { src: remoteImageSrc, width: nodeWidth, height: nodeHeight, aspectRatio: nodeAspectRatio } = node.attrs;
+  const { src: remoteImageSrc, width, height, aspectRatio } = node.attrs;
   // states
   const [size, setSize] = useState<Size>({
-    width: ensurePixelString(nodeWidth, "35%"),
-    height: ensurePixelString(nodeHeight, "auto"),
-    aspectRatio: nodeAspectRatio || null,
+    width: ensurePixelString(width, "35%"),
+    height: ensurePixelString(height, "auto"),
+    aspectRatio: aspectRatio || 1,
   });
   const [isResizing, setIsResizing] = useState(false);
   const [initialResizeComplete, setInitialResizeComplete] = useState(false);
@@ -102,17 +102,17 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
     }
 
     setEditorContainer(closestEditorContainer);
-    const aspectRatioCalculated = img.naturalWidth / img.naturalHeight;
+    const aspectRatio = img.naturalWidth / img.naturalHeight;
 
-    if (nodeWidth === "35%") {
+    if (width === "35%") {
       const editorWidth = closestEditorContainer.clientWidth;
       const initialWidth = Math.max(editorWidth * 0.35, MIN_SIZE);
-      const initialHeight = initialWidth / aspectRatioCalculated;
+      const initialHeight = initialWidth / aspectRatio;
 
       const initialComputedSize = {
         width: `${Math.round(initialWidth)}px` satisfies Pixel,
         height: `${Math.round(initialHeight)}px` satisfies Pixel,
-        aspectRatio: aspectRatioCalculated,
+        aspectRatio: aspectRatio,
       };
 
       setSize(initialComputedSize);
@@ -122,10 +122,9 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
       );
     } else {
       // as the aspect ratio in not stored for old images, we need to update the attrs
-      // or if aspectRatioCalculated from the image's width and height doesn't match stored aspectRatio then also we'll update the attrs
-      if (!nodeAspectRatio || nodeAspectRatio !== aspectRatioCalculated) {
+      if (!aspectRatio) {
         setSize((prevSize) => {
-          const newSize = { ...prevSize, aspectRatio: aspectRatioCalculated };
+          const newSize = { ...prevSize, aspectRatio };
           updateAttributesSafely(
             newSize,
             "Failed to update attributes while initializing images with width but no aspect ratio:"
@@ -135,16 +134,16 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
       }
     }
     setInitialResizeComplete(true);
-  }, [nodeWidth, updateAttributes, editorContainer, nodeAspectRatio]);
+  }, [width, updateAttributes, editorContainer, aspectRatio]);
 
   // for real time resizing
   useLayoutEffect(() => {
     setSize((prevSize) => ({
       ...prevSize,
-      width: ensurePixelString(nodeWidth),
-      height: ensurePixelString(nodeHeight),
+      width: ensurePixelString(width),
+      height: ensurePixelString(height),
     }));
-  }, [nodeWidth, nodeHeight]);
+  }, [width, height]);
 
   const handleResize = useCallback(
     (e: MouseEvent | TouchEvent) => {
@@ -216,7 +215,7 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
       onMouseDown={handleImageMouseDown}
       style={{
         width: size.width,
-        ...(size.aspectRatio && { aspectRatio: size.aspectRatio }),
+        aspectRatio: size.aspectRatio,
       }}
     >
       {showImageLoader && (
@@ -242,7 +241,7 @@ export const CustomImageBlock: React.FC<CustomImageBlockProps> = (props) => {
         })}
         style={{
           width: size.width,
-          ...(size.aspectRatio && { aspectRatio: size.aspectRatio }),
+          aspectRatio: size.aspectRatio,
         }}
       />
       {showImageUtils && (

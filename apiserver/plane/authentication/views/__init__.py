@@ -22,6 +22,10 @@ from .app.google import (
     GoogleCallbackEndpoint,
     GoogleOauthInitiateEndpoint,
 )
+from .app.oidc import (
+    OpenIDConnectCallbackEndpoint,
+    OpenIDConnectInitiateEndpoint,
+)
 from .app.magic import (
     MagicGenerateEndpoint,
     MagicSignInEndpoint,
@@ -46,6 +50,11 @@ from .space.gitlab import (
 from .space.google import (
     GoogleCallbackSpaceEndpoint,
     GoogleOauthInitiateSpaceEndpoint,
+)
+
+from .space.oidc import (
+    OpenIDConnectCallbackSpaceEndpoint,
+    OpenIDConnectInitiateSpaceEndpoint,
 )
 
 from .space.magic import (

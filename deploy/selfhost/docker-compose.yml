@@ -21,7 +21,15 @@ x-app-env: &app-env
     - REDIS_HOST=${REDIS_HOST:-plane-redis}
     - REDIS_PORT=${REDIS_PORT:-6379}
     - REDIS_URL=${REDIS_URL:-redis://plane-redis:6379/}
-
+    # OIDC SETTINGS - Can be configured through admin panel
+    - OIDC_AUTO=${OIDC_AUTO:-0}
+    - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-""}
+    - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-""}
+    - OIDC_DISCOVERY=${OIDC_DISCOVERY:-""}
+    - OIDC_URL_AUTHORIZATION=${OIDC_URL_AUTHORIZATION:-""}
+    - OIDC_URL_TOKEN=${OIDC_URL_TOKEN:-""}
+    - OIDC_URL_USERINFO=${OIDC_URL_USERINFO:-""}
+    - OIDC_URL_ENDSESSION=${OIDC_URL_ENDSESSION:-""}
     # RabbitMQ Settings
     - RABBITMQ_HOST=${RABBITMQ_HOST:-plane-mq}
     - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
@@ -49,7 +57,7 @@ x-app-env: &app-env
 services:
   web:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-frontend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-frontend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -62,7 +70,7 @@ services:
 
   space:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-space:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-space:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -76,7 +84,7 @@ services:
 
   admin:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-admin:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-admin:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -102,7 +110,7 @@ services:
 
   api:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -119,7 +127,7 @@ services:
 
   worker:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -134,7 +142,7 @@ services:
 
   beat-worker:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
@@ -149,7 +157,7 @@ services:
 
   migrator:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: "no"
@@ -196,7 +204,7 @@ services:
   # Comment this if you already have a reverse proxy running
   proxy:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-proxy:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-proxy:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
     pull_policy: if_not_present
     restart: unless-stopped
