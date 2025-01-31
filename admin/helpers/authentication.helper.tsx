@@ -159,7 +159,7 @@ export const getBaseAuthenticationModes: (props: TGetBaseAuthenticationModeProps
 }) => [
     {
       key: "unique-codes",
-      name: "Unique codes",
+      name: "Unique codes (Official)",
       description:
         "Log in or sign up for Plane using codes sent via email. You need to have set up SMTP to use this method.",
       icon: <Mails className="h-6 w-6 p-0.5 text-custom-text-300/80" />,
@@ -167,21 +167,21 @@ export const getBaseAuthenticationModes: (props: TGetBaseAuthenticationModeProps
     },
     {
       key: "passwords-login",
-      name: "Passwords",
+      name: "Passwords (Official)",
       description: "Allow members to create accounts with passwords and use it with their email addresses to sign in.",
       icon: <KeyRound className="h-6 w-6 p-0.5 text-custom-text-300/80" />,
       config: <PasswordLoginConfiguration disabled={disabled} updateConfig={updateConfig} />,
     },
     {
       key: "google",
-      name: "Google",
+      name: "Google (Official)",
       description: "Allow members to log in or sign up for Plane with their Google accounts.",
       icon: <Image src={GoogleLogo} height={20} width={20} alt="Google Logo" />,
       config: <GoogleConfiguration disabled={disabled} updateConfig={updateConfig} />,
     },
     {
       key: "github",
-      name: "GitHub",
+      name: "GitHub (Official)",
       description: "Allow members to log in or sign up for Plane with their GitHub accounts.",
       icon: (
         <Image
@@ -195,7 +195,7 @@ export const getBaseAuthenticationModes: (props: TGetBaseAuthenticationModeProps
     },
     {
       key: "gitlab",
-      name: "GitLab",
+      name: "GitLab (Official)",
       description: "Allow members to log in or sign up to plane with their GitLab accounts.",
       icon: <Image src={GitlabLogo} height={20} width={20} alt="GitLab Logo" />,
       config: <GitlabConfiguration disabled={disabled} updateConfig={updateConfig} />,
