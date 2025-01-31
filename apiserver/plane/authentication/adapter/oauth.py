@@ -46,6 +46,8 @@ class OauthAdapter(Adapter):
             return "GITHUB_OAUTH_PROVIDER_ERROR"
         elif self.provider == "gitlab":
             return "GITLAB_OAUTH_PROVIDER_ERROR"
+        elif self.provider == "oidc":
+            return "OIDC_OAUTH_PROVIDER_ERROR"
         else:
             return "OAUTH_NOT_CONFIGURED"
 
@@ -100,10 +102,8 @@ class OauthAdapter(Adapter):
         account, created = Account.objects.update_or_create(
             user=user,
             provider=self.provider,
+            provider_account_id=self.user_data.get("user").get("provider_id"),
             defaults={
-                "provider_account_id": self.user_data.get("user").get(
-                    "provider_id"
-                ),
                 "access_token": self.token_data.get("access_token"),
                 "refresh_token": self.token_data.get("refresh_token", None),
                 "access_token_expired_at": self.token_data.get(

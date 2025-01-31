@@ -1,6 +1,6 @@
 import { observer } from "mobx-react";
 // components
-import { GithubOAuthButton, GitlabOAuthButton, GoogleOAuthButton } from "@/components/account";
+import { GithubOAuthButton, GitlabOAuthButton, GoogleOAuthButton, OpenIDConnectButton } from "@/components/account";
 // hooks
 import { useInstance } from "@/hooks/store";
 
@@ -23,6 +23,7 @@ export const OAuthOptions: React.FC = observer(() => {
         )}
         {config?.is_github_enabled && <GithubOAuthButton text="Sign in with Github" />}
         {config?.is_gitlab_enabled && <GitlabOAuthButton text="Sign in with GitLab" />}
+        {config?.is_oidc_enabled && <OpenIDConnectButton text="Sign in with OpenID Connect" />}
       </div>
     </>
   );

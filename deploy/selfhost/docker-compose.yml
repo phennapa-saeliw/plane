@@ -3,9 +3,9 @@ x-app-env: &app-env
     - NGINX_PORT=${NGINX_PORT:-80}
     - WEB_URL=${WEB_URL:-http://localhost}
     - DEBUG=${DEBUG:-0}
-    - SENTRY_DSN=${SENTRY_DSN}
+    - SENTRY_DSN=${SENTRY_DSN:-""}
     - SENTRY_ENVIRONMENT=${SENTRY_ENVIRONMENT:-"production"}
-    - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS}
+    - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-}
     # Gunicorn Workers
     - GUNICORN_WORKERS=${GUNICORN_WORKERS:-1}
     #DB SETTINGS
@@ -21,6 +21,23 @@ x-app-env: &app-env
     - REDIS_HOST=${REDIS_HOST:-plane-redis}
     - REDIS_PORT=${REDIS_PORT:-6379}
     - REDIS_URL=${REDIS_URL:-redis://plane-redis:6379/}
+    # OIDC SETTINGS - Can be configured through admin panel
+    - OIDC_AUTO=${OIDC_AUTO:-0}
+    - OIDC_CLIENT_ID=${OIDC_CLIENT_ID:-""}
+    - OIDC_CLIENT_SECRET=${OIDC_CLIENT_SECRET:-""}
+    - OIDC_DISCOVERY=${OIDC_DISCOVERY:-""}
+    - OIDC_URL_AUTHORIZATION=${OIDC_URL_AUTHORIZATION:-""}
+    - OIDC_URL_TOKEN=${OIDC_URL_TOKEN:-""}
+    - OIDC_URL_USERINFO=${OIDC_URL_USERINFO:-""}
+    - OIDC_URL_ENDSESSION=${OIDC_URL_ENDSESSION:-""}
+    # RabbitMQ Settings
+    - RABBITMQ_HOST=${RABBITMQ_HOST:-plane-mq}
+    - RABBITMQ_PORT=${RABBITMQ_PORT:-5672}
+    - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER:-plane}
+    - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD:-plane}
+    - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_VHOST:-plane}
+    - RABBITMQ_VHOST=${RABBITMQ_VHOST:-plane}
+    - AMQP_URL=${AMQP_URL:-amqp://plane:plane@plane-mq:5672/plane}
     # Application secret
     - SECRET_KEY=${SECRET_KEY:-60gp0byfz2dvffa45cxl20p1scy9xbpf6d8c5y0geejgkyp1b5}
     # DATA STORE SETTINGS
@@ -34,17 +51,15 @@ x-app-env: &app-env
     - MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD:-"secret-key"}
     - BUCKET_NAME=${BUCKET_NAME:-uploads}
     - FILE_SIZE_LIMIT=${FILE_SIZE_LIMIT:-5242880}
-    # Admin and Space URLs
-    - ADMIN_BASE_URL=${ADMIN_BASE_URL}
-    - SPACE_BASE_URL=${SPACE_BASE_URL}
-    - APP_BASE_URL=${APP_BASE_URL}
+    # Live server env
+    - API_BASE_URL=${API_BASE_URL:-http://api:8000}
 
 services:
   web:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-frontend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-frontend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: node web/server.js web
     deploy:
@@ -55,9 +70,9 @@ services:
 
   space:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-space:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-space:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: node space/server.js space
     deploy:
@@ -69,9 +84,9 @@ services:
 
   admin:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-admin:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-admin:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: node admin/server.js admin
     deploy:
@@ -80,11 +95,24 @@ services:
       - api
       - web
 
+  live:
+    <<: *app-env
+    image: ${DOCKERHUB_USER:-makeplane}/plane-live:${APP_RELEASE:-stable}
+    platform: ${DOCKER_PLATFORM:-}
+    pull_policy: if_not_present
+    restart: unless-stopped
+    command: node live/dist/server.js live
+    deploy:
+      replicas: ${LIVE_REPLICAS:-1}
+    depends_on:
+      - api
+      - web
+
   api:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: ./bin/docker-entrypoint-api.sh
     deploy:
@@ -94,12 +122,14 @@ services:
     depends_on:
       - plane-db
       - plane-redis
+      - plane-mq
+
 
   worker:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: ./bin/docker-entrypoint-worker.sh
     volumes:
@@ -108,12 +138,13 @@ services:
       - api
       - plane-db
       - plane-redis
+      - plane-mq
 
   beat-worker:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: unless-stopped
     command: ./bin/docker-entrypoint-beat.sh
     volumes:
@@ -122,12 +153,13 @@ services:
       - api
       - plane-db
       - plane-redis
+      - plane-mq
 
   migrator:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-backend:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-backend:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
     restart: "no"
     command: ./bin/docker-entrypoint-migrator.sh
     volumes:
@@ -138,7 +170,7 @@ services:
 
   plane-db:
     <<: *app-env
-    image: postgres:15.5-alpine
+    image: postgres:15.7-alpine
     pull_policy: if_not_present
     restart: unless-stopped
     command: postgres -c 'max_connections=1000'
@@ -153,6 +185,13 @@ services:
     volumes:
       - redisdata:/data
 
+  plane-mq:
+    <<: *app-env
+    image: rabbitmq:3.13.6-management-alpine
+    restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
   plane-minio:
     <<: *app-env
     image: minio/minio:latest
@@ -165,9 +204,10 @@ services:
   # Comment this if you already have a reverse proxy running
   proxy:
     <<: *app-env
-    image: ${DOCKERHUB_USER:-makeplane}/plane-proxy:${APP_RELEASE:-stable}
+    image: ${DOCKERHUB_USER:-ghcr.io/phennapa-saeliw/plane}/plane-proxy:${APP_RELEASE:-stable}
     platform: ${DOCKER_PLATFORM:-}
-    pull_policy: ${PULL_POLICY:-always}
+    pull_policy: if_not_present
+    restart: unless-stopped
     ports:
       - ${NGINX_PORT}:80
     depends_on:
@@ -178,8 +218,10 @@ services:
 volumes:
   pgdata:
   redisdata:
+  
   uploads:
   logs_api:
   logs_worker:
   logs_beat-worker:
   logs_migrator:
+  rabbitmq_data:

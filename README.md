@@ -1,3 +1,12 @@
+<h1>OpenID Connect for Plane</h1>
+
+This repository tries to provide OpenID Connect to Plane, because there was no official implementation. Now there is an SSO Tax on it. This is an inofficial implementation and is not supported by or affiliated with the original Plane project.
+If you have issues with the Authentication process please raise an issue in this repo. For every other issue please make a request in the official repo: <a href="https://github.com/makeplane/plane">here</a>.
+
+To selfhost please follow <a href="https://github.com/phennapa-saeliw/plane/tree/preview/deploy/selfhost">these instructions</a> here as they were addapted from the original documentation to work with this implementation.
+
+<h1>Original Information:</h1>
+
 <br /><br />
 
 <p align="center">
